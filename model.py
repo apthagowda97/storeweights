@@ -1,5 +1,3 @@
-import os
-import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
@@ -25,7 +23,9 @@ class TestModel(nn.Module):
         x = self.fc3(x)
         return x
 
+
 model = TestModel()
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-weights.save('TestModel',model,optimizer)
-weights.load('TestModel',model,optimizer,version=0)
+
+weights.save('TestModel', model, optimizer)
+weights.load('TestModel', model, optimizer, version=0)
