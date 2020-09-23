@@ -2,104 +2,115 @@ import os
 import torch
 
 
-def show(model_name):
-    """
-    Return's the stored checkpoint's as a list.
-    """
+def get_path(model_name, gdrive):
 
-    if os.path.isdir(model_name):
-        file_names = os.listdir(model_name)
+    if gdrive == True:
+        if not os.path.isdir("gdrive"):
+            mount_drive.gdrive()
+        path = os.path.join("gdrive", "My Drive", model_name)
+    else:
+        path = os.path.join(model_name)
+
+    return path
+
+
+def get_file_names(path):
+
+    if os.path.isdir(path):
+        file_names = os.listdir(path)
         file_names.sort()
-
         if len(file_names) != 0:
             return file_names
         else:
             print("No checkpoint exists.")
+            return None
     else:
-        print("Not available")
+        print("No checkpoint exists.")
+        return None
 
 
-def save(model_name, model, optimizer=None, extra_info={}):
-    """
-    Saves the given model in the checkpoint dir as a .tar file. 
-    """
+def show(model_name, gdrive=False):
 
-    path = os.path.join(model_name, model_name)
+    path = get_path(model_name, gdrive)
+    print(get_file_names(path))
 
-    if not os.path.isdir(model_name):
-        os.mkdir(model_name)
+
+def save(model_name, model, optimizer=None, extra_info={}, gdrive=False):
+
+    path = get_path(model_name, gdrive)
+    if not os.path.isdir(path):
+        os.mkdir(path)
         version = 0
 
     else:
-        file_names = os.listdir(model_name)
-        file_names.sort()
-
-        if len(file_names) == 0:
-            version = 0
-        else:
+        file_names = get_file_names(path)
+        if file_names != None:
             version = int(file_names[-1].split("_")[1].split(".")[0]) + 1
+        else:
+            version = 0
 
-    file_path = os.path.join(path + f"_{version}.tar")
+    file_path = os.path.join(path, f"{model_name}_{version}.tar")
+
+    if optimizer == None:
+        opt_state_dict = None
+    else:
+        opt_state_dict = optimizer.state_dict()
 
     print(f"Saving Checkpoint: {model_name}_{version}.tar")
     torch.save(
         {
             "model_state_dict": model.state_dict(),
-            "optimizer_state_dict": None if optimizer is None else optimizer.state_dict(),
+            "optimizer_state_dict": opt_state_dict,
             "extra_info": extra_info,
         },
         file_path,
     )
 
 
-def load(model_name, model, optimizer=None, version=None, return_extra_info=False):
-    """
-    Load's the given version of model from the checkpoint dir.
-    """
+def load(
+    model_name,
+    model,
+    optimizer=None,
+    version=None,
+    return_extra_info=False,
+    gdrive=False,
+):
 
-    path = os.path.join(model_name, model_name)
+    path = get_path(model_name, gdrive)
+    file_names = get_file_names(path)
 
-    if os.path.isdir(model_name):
-        file_names = os.listdir(model_name)
-        file_names.sort()
+    if file_names != None:
         if version == None:
             version = int(file_names[-1].split("_")[1].split(".")[0])
 
-    file_path = os.path.join(path + f"_{version}.tar")
+        file_path = os.path.join(path, f"{model_name}_{version}.tar")
 
-    if os.path.isfile(file_path):
-        print(f"Loading Checkpoint: {model_name}_{version}.tar")
-        checkpoint = torch.load(file_path)
-        model.load_state_dict(checkpoint["model_state_dict"])
-        if optimizer is not None:
-            optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-        if return_extra_info:
-            return checkpoint["extra_info"]
+        if os.path.isfile(file_path):
+            print(f"Loading Checkpoint: {model_name}_{version}.tar")
+            checkpoint = torch.load(file_path)
+            model.load_state_dict(checkpoint["model_state_dict"])
+            if optimizer is not None:
+                optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+            if return_extra_info:
+                return checkpoint["extra_info"]
 
-    else:
-        print("No checkpoint exists.")
-
-
-def remove(model_name, version=None):
-    """
-    Removes the given version of the model from the checkpoint dir. 
-    """
-
-    path = os.path.join(model_name, model_name)
-
-    if os.path.isdir(model_name):
-        file_names = os.listdir(model_name)
-        file_names.sort()
-        if len(file_names) != 0:
-            if version == None:
-                print(f"Deleting {file_names[-1]}.")
-                os.remove(os.path.join(model_name, file_names[-1]))
-
-            elif os.path.isfile(os.path.join(path + f"_{version}.tar")):
-                print(f"Deleting {model_name}_{version}.tar")
-                os.remove(os.path.join(path + f"_{version}.tar"))
-
-            else:
-                print(f"{model_name}_{version}.tar dosen't exists.")
         else:
             print("No checkpoint exists.")
+
+
+def remove(model_name, version=None, gdrive=False):
+
+    path = get_path(model_name, gdrive)
+    file_names = get_file_names(path)
+
+    if file_names != None:
+        if version == None:
+            print(f"Deleting {file_names[-1]}.")
+            os.remove(os.path.join(path, file_names[-1]))
+
+        elif os.path.isfile(os.path.join(path, f"{model_name}_{version}.tar")):
+            print(f"Deleting {model_name}_{version}.tar")
+            os.remove(os.path.join(path, f"{model_name}_{version}.tar"))
+
+        else:
+            print(f"{model_name}_{version}.tar dosen't exists.")
