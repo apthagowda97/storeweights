@@ -1,5 +1,6 @@
 import os
 import torch
+from . import mount_drive
 
 
 def get_path(model_name, gdrive):
@@ -23,16 +24,18 @@ def get_file_names(path):
             return file_names
         else:
             print("No checkpoint exists.")
-            return None
+            return
     else:
         print("No checkpoint exists.")
-        return None
+        return
 
 
 def show(model_name, gdrive=False):
 
     path = get_path(model_name, gdrive)
-    print(get_file_names(path))
+    file_names = get_file_names(path)
+    if file_names != None:
+        print(file_names)
 
 
 def save(model_name, model, optimizer=None, extra_info={}, gdrive=False):

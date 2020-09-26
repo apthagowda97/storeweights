@@ -3,6 +3,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from storeweights import weights
 
+
 class TestModel(nn.Module):
     def __init__(self):
         super(TestModel, self).__init__()
@@ -26,8 +27,9 @@ class TestModel(nn.Module):
 model = TestModel()
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-weights.save('TestModel', model, optimizer)
-weights.load('TestModel', model, optimizer,version=2)
-weights.remove('TestModel',version=4)
-weights.remove('TestModel')
-weights.show('TestModel')
+weights.save("testModel", model, optimizer)
+weights.load("testModel", model, optimizer, version=1)
+weights.load("testModel", model, optimizer)
+weights.remove("testModel", version=2)
+weights.remove("testModel")
+weights.show("testModel")
