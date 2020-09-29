@@ -26,10 +26,16 @@ class TestModel(nn.Module):
 
 model = TestModel()
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+epoch = 20
 
-weights.save("testModel", model, optimizer)
-weights.load("testModel", model, optimizer, version=1)
-weights.load("testModel", model, optimizer)
-weights.remove("testModel", version=2)
-weights.remove("testModel")
-weights.show("testModel")
+weights.save("test_model", model, optimizer, extra_info={"epoch": epoch})
+
+weights.load("test_model", model, optimizer, return_extra_info=True)
+weights.load("test_model", model, optimizer, version=1, return_extra_info=True)
+
+weights.remove("test_model", version=2)
+weights.remove("test_model")
+
+weights.save("test_model", model, optimizer, extra_info={"epoch": epoch})
+
+weights.display("test_model")
