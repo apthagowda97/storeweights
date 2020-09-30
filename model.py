@@ -28,6 +28,7 @@ model = TestModel()
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 epoch = 20
 
+weights.save("test_model", model, optimizer, extra_info={"epoch": epoch},gdrive=True)
 weights.save("test_model", model, optimizer, extra_info={"epoch": epoch})
 
 weights.load("test_model", model, optimizer, return_extra_info=True)
@@ -38,4 +39,4 @@ weights.remove("test_model")
 
 weights.save("test_model", model, optimizer, extra_info={"epoch": epoch})
 
-weights.display("test_model")
+weights.view("test_model")
